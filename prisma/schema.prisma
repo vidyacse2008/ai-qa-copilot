@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Project {
+  id               String            @id @default(cuid())
+  name             String
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  requirementDocs  RequirementDoc[]
+}
+
+enum RequirementSourceType {
+  UPLOAD
+  PASTE
+}
+
+model RequirementDoc {
+  id         String                 @id @default(cuid())
+  projectId  String
+  project    Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  filename   String?
+  sourceType RequirementSourceType
+  rawText    String
+  createdAt  DateTime               @default(now())
+  runs       TestRun[]
+}
+
+enum TestRunStatus {
+  PENDING
+  COMPLETE
+  FAILED
+}
+
+model TestRun {
+  id                String          @id @default(cuid())
+  requirementDocId  String
+  requirementDoc    RequirementDoc  @relation(fields: [requirementDocId], references: [id], onDelete: Cascade)
+  provider          String
+  model             String
+  status            TestRunStatus   @default(PENDING)
+  errorMessage      String?
+  createdAt         DateTime        @default(now())
+  testCases         TestCase[]
+}
+
+enum TestCaseCategory {
+  FUNCTIONAL
+  NEGATIVE
+  BOUNDARY
+  EDGE
+}
+
+enum TestCasePriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model TestCase {
+  id              String            @id @default(cuid())
+  runId           String
+  run             TestRun           @relation(fields: [runId], references: [id], onDelete: Cascade)
+  category        TestCaseCategory
+  title           String
+  preconditions   String?
+  steps           String
+  expectedResult  String
+  priority        TestCasePriority  @default(MEDIUM)
+  createdAt       DateTime          @default(now())
+}
