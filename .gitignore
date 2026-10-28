@@ -45,3 +45,7 @@ next-env.d.ts
 # sqlite database
 /dev.db
 /dev.db-journal
+!.env.local.example
+
+# personal notes
+INTERVIEW_NOTES.md

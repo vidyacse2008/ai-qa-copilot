@@ -1,4 +1,5 @@
 #!/bin/bash
-export PATH="/Users/vidyasrinivasan/.nvm/versions/node/v24.18.1/bin:$PATH"
-cd /Users/vidyasrinivasan/ai-qa-copilot
+# Starts the dev server from this folder, using nvm's default Node if nvm is installed.
+cd "$(dirname "$0")"
+[ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh"
 exec npm run dev
