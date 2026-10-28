@@ -50,6 +50,7 @@ model TestRun {
   errorMessage      String?
   createdAt         DateTime        @default(now())
   testCases         TestCase[]
+  scripts           GeneratedScript[]
 }
 
 enum TestCaseCategory {
@@ -76,4 +77,26 @@ model TestCase {
   expectedResult  String
   priority        TestCasePriority  @default(MEDIUM)
   createdAt       DateTime          @default(now())
+}
+
+enum ScriptStatus {
+  PENDING
+  COMPLETE
+  FAILED
+}
+
+model GeneratedScript {
+  id            String        @id @default(cuid())
+  runId         String
+  run           TestRun       @relation(fields: [runId], references: [id], onDelete: Cascade)
+  framework     String        @default("playwright")
+  baseUrl       String
+  pageContext   String?
+  provider      String
+  model         String
+  status        ScriptStatus  @default(PENDING)
+  code          String?
+  assumptions   String?
+  errorMessage  String?
+  createdAt     DateTime      @default(now())
 }

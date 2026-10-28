@@ -24,4 +24,21 @@ export interface LLMProvider {
   generateTestCases(
     input: GenerateTestCasesInput,
   ): Promise<GenerateTestCasesResult>;
+  generatePlaywrightScript(
+    input: GeneratePlaywrightScriptInput,
+  ): Promise<GeneratePlaywrightScriptResult>;
+}
+
+export interface GeneratePlaywrightScriptInput {
+  requirementText: string;
+  testCases: GeneratedTestCase[];
+  baseUrl: string;
+  pageContext?: string;
+}
+
+export interface GeneratePlaywrightScriptResult {
+  provider: string;
+  model: string;
+  code: string;
+  assumptions: string[];
 }

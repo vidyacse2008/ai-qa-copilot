@@ -49,6 +49,12 @@ integration, and CI/CD failure analysis.
    expected result.
 4. Browse the results by category and export to CSV, Excel, Markdown, or
    JSON.
+5. Optionally, on a completed run, enter the base URL of the app under test
+   (and any page details you have, like HTML or selectors) and click
+   "Generate Playwright code". Claude turns the test cases into a single
+   `.spec.ts` file you can view or download. Guessed routes and selectors are
+   marked `// TODO: verify`, and cases that can't run in a browser are kept as
+   `test.fixme`.
 
 ## Architecture notes
 
@@ -58,6 +64,9 @@ integration, and CI/CD failure analysis.
   JSON output (validated with `zod`).
 - `src/lib/export/` — CSV/XLSX/Markdown/JSON serializers, used by the
   `/api/runs/[runId]/export/[format]` route.
+- Playwright codegen — `generatePlaywrightScript` in `src/app/actions/codegen.ts`
+  saves a `GeneratedScript` row per attempt (linked to a `TestRun`);
+  `/api/scripts/[scriptId]/download` serves the `.spec.ts` file.
 - `prisma/schema.prisma` — `Project` → `RequirementDoc` → `TestRun` →
   `TestCase`. Every generation attempt is a `TestRun` row, so history is
   browsable per project.

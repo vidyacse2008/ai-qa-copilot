@@ -3,6 +3,24 @@ import Link from "next/link";
 import { db } from "@/lib/db";
 import { TestCaseTable } from "@/components/TestCaseTable";
 import { ExportMenu } from "@/components/ExportMenu";
+import { PlaywrightCodegenForm } from "@/components/PlaywrightCodegenForm";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+const STATUS_VARIANT: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
+  PENDING: "secondary",
+  COMPLETE: "default",
+  FAILED: "destructive",
+};
 
 export default async function RunPage({
   params,
@@ -16,6 +34,7 @@ export default async function RunPage({
     include: {
       testCases: { orderBy: [{ category: "asc" }, { createdAt: "asc" }] },
       requirementDoc: true,
+      scripts: { orderBy: { createdAt: "desc" } },
     },
   });
 
@@ -64,6 +83,42 @@ export default async function RunPage({
             priority: tc.priority,
           }))}
         />
+      )}
+
+      {run.status === "COMPLETE" && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Playwright code</CardTitle>
+            <CardDescription>
+              Turn these test cases into a runnable Playwright spec file. Treat
+              it as a first draft: check routes and selectors before running.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            <PlaywrightCodegenForm runId={run.id} />
+
+            {run.scripts.length > 0 && (
+              <ul className="flex flex-col gap-1.5">
+                {run.scripts.map((script) => (
+                  <li key={script.id}>
+                    <Link
+                      href={`/projects/${projectId}/runs/${run.id}/scripts/${script.id}`}
+                      className="flex items-center justify-between rounded-md border px-3 py-2 text-sm hover:bg-muted"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Badge variant={STATUS_VARIANT[script.status] ?? "outline"}>
+                          {script.status}
+                        </Badge>
+                        {new Date(script.createdAt).toLocaleString()}
+                      </span>
+                      <span className="text-muted-foreground">{script.baseUrl}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
       )}
     </main>
   );
