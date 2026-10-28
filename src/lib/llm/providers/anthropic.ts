@@ -10,6 +10,9 @@ import type {
 } from "../types";
 
 const MODEL = "claude-sonnet-5";
+// Hard deadline per model call. Without it a stalled stream can leave a run
+// PENDING for ~30 minutes (SDK default: 10 min timeout x 3 attempts).
+const REQUEST_DEADLINE_MS = 5 * 60_000;
 
 // ---------------------------------------------------------------------------
 // Test case generation
@@ -256,8 +259,16 @@ export class AnthropicProvider implements LLMProvider {
         tools: [tool],
         tool_choice: { type: "tool", name: tool.name },
         messages,
-      })
-      .finalMessage();
+      }, { signal: AbortSignal.timeout(REQUEST_DEADLINE_MS) })
+      .finalMessage()
+      .catch((err) => {
+        if (err instanceof Anthropic.APIUserAbortError) {
+          throw new Error(
+            `Model call did not finish within ${REQUEST_DEADLINE_MS / 60_000} minutes. Try again.`,
+          );
+        }
+        throw err;
+      });
 
     if (message.stop_reason === "max_tokens") {
       throw new Error(
